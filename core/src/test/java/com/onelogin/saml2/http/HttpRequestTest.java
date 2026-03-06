@@ -4,9 +4,10 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,10 +15,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
 
 import com.onelogin.saml2.test.NaiveUrlEncoder;
 import com.onelogin.saml2.util.Util;
+import org.junit.jupiter.api.Test;
 
 public class HttpRequestTest {
     @Test

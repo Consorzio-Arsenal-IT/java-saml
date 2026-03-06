@@ -2,14 +2,8 @@ package com.onelogin.saml2.test.logout;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -23,10 +17,8 @@ import javax.xml.xpath.XPathExpressionException;
 
 import java.security.PrivateKey;
 
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import com.onelogin.saml2.logout.LogoutRequest;
 import com.onelogin.saml2.logout.LogoutRequestParams;
@@ -43,8 +35,6 @@ import com.onelogin.saml2.util.Util;
 
 public class LogoutRequestTest {
 
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
 
 	/**
 	 * Tests the constructor and the getEncodedLogoutRequest method of LogoutRequest
@@ -452,9 +442,10 @@ public class LogoutRequestTest {
 	public void testGetNameIdDataNoKey() throws Exception {
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
 
-		expectedEx.expect(SettingsException.class);
-		expectedEx.expectMessage("Key is required in order to decrypt the NameID");
-		LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
+		SettingsException exception = assertThrows(SettingsException.class, () -> {
+			LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
+		});
+		assertTrue(exception.getMessage().contains("Key is required in order to decrypt the NameID"));
 	}
 
 	/**
@@ -471,9 +462,10 @@ public class LogoutRequestTest {
 		String keyString = Util.getFileAsString("data/misc/sp4.key");
 		PrivateKey key = Util.loadPrivateKey(keyString);
 
-		expectedEx.expect(Exception.class);
-		expectedEx.expectMessage("Not able to decrypt the EncryptedID and get a NameID");
-		LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
+		Exception exception = assertThrows(Exception.class, () -> {
+			LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
+		});
+		assertTrue(exception.getMessage().contains("Not able to decrypt the EncryptedID and get a NameID"));
 	}
 
 	/**
@@ -488,9 +480,10 @@ public class LogoutRequestTest {
 	public void testGetNameIdDataNoNameId() throws Exception {
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_no_nameid.xml");
 
-		expectedEx.expect(ValidationError.class);
-		expectedEx.expectMessage("No name id found in Logout Request.");
-		LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
+		ValidationError exception = assertThrows(ValidationError.class, () -> {
+			LogoutRequest.getNameIdData(logoutRequestStr, null).toString();
+		});
+		assertTrue(exception.getMessage().contains("No name id found in Logout Request."));
 	}
 
 	/**
@@ -577,9 +570,10 @@ public class LogoutRequestTest {
 	public void testGetNameIdNoKey() throws Exception {
 		String logoutRequestStr = Util.getFileAsString("data/logout_requests/logout_request_encrypted_nameid.xml");
 
-		expectedEx.expect(SettingsException.class);
-		expectedEx.expectMessage("Key is required in order to decrypt the NameID");
-		LogoutRequest.getNameId(logoutRequestStr, null).toString();
+		SettingsException exception = assertThrows(SettingsException.class, () -> {
+			LogoutRequest.getNameId(logoutRequestStr, null).toString();
+		});
+		assertTrue(exception.getMessage().contains("Key is required in order to decrypt the NameID"));
 	}
 
 	/**
@@ -596,9 +590,10 @@ public class LogoutRequestTest {
 		String keyString = Util.getFileAsString("data/misc/sp4.key");
 		PrivateKey key = Util.loadPrivateKey(keyString);
 
-		expectedEx.expect(Exception.class);
-		expectedEx.expectMessage("Not able to decrypt the EncryptedID and get a NameID");
-		LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
+		Exception exception = assertThrows(Exception.class, () -> {
+			LogoutRequest.getNameIdData(logoutRequestStr, key).toString();
+		});
+		assertTrue(exception.getMessage().contains("Not able to decrypt the EncryptedID and get a NameID"));
 	}
 
 	/**

@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>it.arsenal</groupId>
+		<groupId>com.onelogin</groupId>
 		<artifactId>java-saml-tookit-samples</artifactId>
-		<version>2.9.2-SNAPSHOT</version>
+		<version>2.9.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>java-saml-tookit-jspsample</artifactId>
@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
 			<artifactId>jakarta.servlet-api</artifactId>
-    		<version>6.1.0</version>
+			<version>6.2.0-M1</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

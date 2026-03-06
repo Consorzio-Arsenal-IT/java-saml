@@ -6,14 +6,15 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.matches;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.matches;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -37,13 +38,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.w3c.dom.Document;
 
@@ -71,8 +70,6 @@ import com.onelogin.saml2.util.Util;
 
 public class AuthTest {
 
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
 
 	private String getSAMLRequestFromURL(String url) throws URISyntaxException, UnsupportedEncodingException {
 		String xml = "";
@@ -302,9 +299,10 @@ public class AuthTest {
 
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.sperrors.properties").build();
 		
-		expectedEx.expect(SettingsException.class);
-		expectedEx.expectMessage("Invalid settings: sp_entityId_not_found, sp_acs_not_found, sp_cert_not_found_and_required, contact_not_enough_data, contact_type_invalid, organization_not_enough_data, idp_cert_or_fingerprint_not_found_and_required, idp_cert_not_found_and_required");
-		new Auth(settings, request, response);
+		SettingsException exception = assertThrows(SettingsException.class, () -> {
+			new Auth(settings, request, response);
+		});
+		assertTrue(exception.getMessage().contains("Invalid settings: sp_entityId_not_found, sp_acs_not_found, sp_cert_not_found_and_required, contact_not_enough_data, contact_type_invalid, organization_not_enough_data, idp_cert_or_fingerprint_not_found_and_required, idp_cert_not_found_and_required"));
 	}
 
 	/**
@@ -1172,9 +1170,10 @@ public class AuthTest {
 		when(request.getRequestURL()).thenReturn(new StringBuffer("https://pitbulk.no-ip.org/newonelogin/demo1/index.php?acs"));
 		settings.setStrict(false);
 
-		expectedEx.expect(SettingsException.class);
-		expectedEx.expectMessage("Invalid settings: idp_cert_not_found_and_required");
-		Auth auth = new Auth(settings, request, response);
+		SettingsException exception = assertThrows(SettingsException.class, () -> {
+			new Auth(settings, request, response);
+		});
+		assertTrue(exception.getMessage().contains("Invalid settings: idp_cert_not_found_and_required"));
 	}
 
 	/**
@@ -1195,9 +1194,10 @@ public class AuthTest {
 		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
 		Auth auth = new Auth(settings, request, response);
 
-		expectedEx.expect(ValidationError.class);
-		expectedEx.expectMessage("SAML Response could not be processed");
-		auth.processResponse();
+		ValidationError exception = assertThrows(ValidationError.class, () -> {
+			auth.processResponse();
+		});
+		assertTrue(exception.getMessage().contains("SAML Response could not be processed"));
 	}
 
 	/**
@@ -1504,9 +1504,10 @@ public class AuthTest {
 		settings.setAuthnRequestsSigned(true);
 		settings.setSignatureAlgorithm(Constants.RSA_SHA1);
 
-		expectedEx.expect(SettingsException.class);
-		expectedEx.expectMessage("Invalid settings: sp_cert_not_found_and_required");
-		Auth auth = new Auth(settings, request, response);
+		SettingsException exception = assertThrows(SettingsException.class, () -> {
+			new Auth(settings, request, response);
+		});
+		assertTrue(exception.getMessage().contains("Invalid settings: sp_cert_not_found_and_required"));
 	}
 	
 	/**
@@ -1722,9 +1723,10 @@ public class AuthTest {
 		settings.setLogoutRequestSigned(true);
 		settings.setSignatureAlgorithm(Constants.RSA_SHA1);
 
-		expectedEx.expect(SettingsException.class);
-		expectedEx.expectMessage("Invalid settings: sp_cert_not_found_and_required");
-		Auth auth = new Auth(settings, request, response);
+		SettingsException exception = assertThrows(SettingsException.class, () -> {
+			new Auth(settings, request, response);
+		});
+		assertTrue(exception.getMessage().contains("Invalid settings: sp_cert_not_found_and_required"));
 	}
 	
 	/**
@@ -1780,9 +1782,10 @@ public class AuthTest {
 
 		Auth auth = new Auth("config/config.invalidspcertstring.properties");
 		
-		expectedEx.expect(SettingsException.class);
-		expectedEx.expectMessage("Trying to sign the SAMLRequest but can't load the SP private key");
-		auth.buildRequestSignature(deflatedEncodedAuthNRequest, relayState, signAlgorithm);
+		SettingsException exception = assertThrows(SettingsException.class, () -> {
+			auth.buildRequestSignature(deflatedEncodedAuthNRequest, relayState, signAlgorithm);
+		});
+		assertTrue(exception.getMessage().contains("Trying to sign the SAMLRequest but can't load the SP private key"));
 	}
 
 	/**
@@ -1822,14 +1825,16 @@ public class AuthTest {
 	 *
 	 * @see com.onelogin.saml2.Auth#buildRequestSignature
 	 */
-	@Test(expected=IllegalArgumentException.class)
+	@Test
 	public void testBuildRequestSignatureDsaSha1() throws URISyntaxException, IOException, SettingsException, Error {
-		String deflatedEncodedAuthNRequest = Util.getFileAsString("data/requests/authn_request.xml.deflated.base64");
-		String relayState = "http://example.com";
-		String signAlgorithm = Constants.DSA_SHA1;
+		assertThrows(IllegalArgumentException.class, () -> {
+			String deflatedEncodedAuthNRequest = Util.getFileAsString("data/requests/authn_request.xml.deflated.base64");
+			String relayState = "http://example.com";
+			String signAlgorithm = Constants.DSA_SHA1;
 
-		Auth auth = new Auth("config/config.certstring.properties");
-		String signature = auth.buildRequestSignature(deflatedEncodedAuthNRequest, relayState, signAlgorithm);
+			Auth auth = new Auth("config/config.certstring.properties");
+			String signature = auth.buildRequestSignature(deflatedEncodedAuthNRequest, relayState, signAlgorithm);
+		});
 	}
 	
 	/**
@@ -1938,14 +1943,16 @@ public class AuthTest {
 	 *
 	 * @see com.onelogin.saml2.Auth#buildResponseSignature
 	 */
-	@Test(expected=IllegalArgumentException.class)
+	@Test
 	public void testBuildResponseSignatureDsaSha1() throws URISyntaxException, IOException, SettingsException, Error {
-		String deflatedEncodedLogoutResponse = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
-		String relayState = "http://example.com";
-		String signAlgorithm = Constants.DSA_SHA1;
+		assertThrows(IllegalArgumentException.class, () -> {
+			String deflatedEncodedLogoutResponse = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
+			String relayState = "http://example.com";
+			String signAlgorithm = Constants.DSA_SHA1;
 
-		Auth auth = new Auth("config/config.certstring.properties");
-		String signature = auth.buildResponseSignature(deflatedEncodedLogoutResponse, relayState, signAlgorithm);
+			Auth auth = new Auth("config/config.certstring.properties");
+			String signature = auth.buildResponseSignature(deflatedEncodedLogoutResponse, relayState, signAlgorithm);
+		});
 	}
 	
 	/**
@@ -2242,31 +2249,33 @@ public class AuthTest {
 	 *
 	 * @see com.onelogin.saml2.Auth#setAuthnRequestFactory(com.onelogin.saml2.factory.SamlOutgoingMessageFactory)
 	 */
-	@Test(expected = FactoryInvokedException.class)
+	@Test
 	public void testAuthnRequestFactory() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		assertThrows(FactoryInvokedException.class, () -> {
+			HttpServletRequest request = mock(HttpServletRequest.class);
+			HttpServletResponse response = mock(HttpServletResponse.class);
 
-		final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		final AuthnRequestParams params =  new AuthnRequestParams(false, false, false);
-		
-		class AuthnRequestEx extends AuthnRequest {
-			public AuthnRequestEx(Saml2Settings sett, AuthnRequestParams par) {
-				super(sett, par);
-				assertSame(settings, sett);
-				assertSame(params, par);
-				throw new FactoryInvokedException();
+			final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+			final AuthnRequestParams params =  new AuthnRequestParams(false, false, false);
+			
+			class AuthnRequestEx extends AuthnRequest {
+				public AuthnRequestEx(Saml2Settings sett, AuthnRequestParams par) {
+					super(sett, par);
+					assertSame(settings, sett);
+					assertSame(params, par);
+					throw new FactoryInvokedException();
+				}
 			}
-		}
-		
-		Auth auth = new Auth(settings, request, response);
-		auth.setSamlMessageFactory(new SamlMessageFactory() {
-			@Override
-			public AuthnRequest createAuthnRequest(Saml2Settings settings, AuthnRequestParams params) {
-				return new AuthnRequestEx(settings, params);
-			}
+			
+			Auth auth = new Auth(settings, request, response);
+			auth.setSamlMessageFactory(new SamlMessageFactory() {
+				@Override
+				public AuthnRequest createAuthnRequest(Saml2Settings settings, AuthnRequestParams params) {
+					return new AuthnRequestEx(settings, params);
+				}
+			});
+			auth.login(params);
 		});
-		auth.login(params);
 	}
 
 	/**
@@ -2276,34 +2285,36 @@ public class AuthTest {
 	 *
 	 * @see com.onelogin.saml2.Auth#setSamlResponseFactory(com.onelogin.saml2.factory.SamlReceivedMessageFactory)
 	 */
-	@Test(expected = FactoryInvokedException.class)
+	@Test
 	public void testSamlResponseFactory() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
+		assertThrows(FactoryInvokedException.class, () -> {
+			HttpServletRequest request = mock(HttpServletRequest.class);
+			HttpServletResponse response = mock(HttpServletResponse.class);
+			when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/java-saml-jspsample/acs.jsp"));
 
-		String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+			String samlResponseEncoded = Util.getFileAsString("data/responses/response1.xml.base64");
+			when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
 
-		final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		
-		class SamlResponseEx extends SamlResponse {
-			public SamlResponseEx(Saml2Settings sett, HttpRequest req) throws Exception {
-				super(sett, req);
-				assertSame(settings, sett);
-				assertEquals(ServletUtils.makeHttpRequest(request), req);
-				throw new FactoryInvokedException();
+			final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+			
+			class SamlResponseEx extends SamlResponse {
+				public SamlResponseEx(Saml2Settings sett, HttpRequest req) throws Exception {
+					super(sett, req);
+					assertSame(settings, sett);
+					assertEquals(ServletUtils.makeHttpRequest(request), req);
+					throw new FactoryInvokedException();
+				}
 			}
-		}
-		
-		Auth auth = new Auth(settings, request, response);
-		auth.setSamlMessageFactory(new SamlMessageFactory() {
-			@Override
-			public SamlResponse createSamlResponse(Saml2Settings settings, HttpRequest request) throws Exception {
-				return new SamlResponseEx(settings, request);
-			}
+			
+			Auth auth = new Auth(settings, request, response);
+			auth.setSamlMessageFactory(new SamlMessageFactory() {
+				@Override
+				public SamlResponse createSamlResponse(Saml2Settings settings, HttpRequest request) throws Exception {
+					return new SamlResponseEx(settings, request);
+				}
+			});
+			auth.processResponse();
 		});
-		auth.processResponse();
 	}
 
 	/**
@@ -2313,33 +2324,35 @@ public class AuthTest {
 	 *
 	 * @see com.onelogin.saml2.Auth#setOutgoingLogoutRequestFactory(com.onelogin.saml2.factory.SamlOutgoingMessageFactory)
 	 */
-	@Test(expected = FactoryInvokedException.class)
+	@Test
 	public void testOutgoingLogoutRequestFactory() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
+		assertThrows(FactoryInvokedException.class, () -> {
+			HttpServletRequest request = mock(HttpServletRequest.class);
+			HttpServletResponse response = mock(HttpServletResponse.class);
 
-		final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
-		final LogoutRequestParams params =  new LogoutRequestParams();
-		
-		class LogoutRequestEx extends LogoutRequest {
+			final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.my.properties").build();
+			final LogoutRequestParams params =  new LogoutRequestParams();
 			
-			public LogoutRequestEx(Saml2Settings sett, LogoutRequestParams par) {
-				super(sett, par);
-				assertSame(settings, sett);
-				assertSame(params, par);
-				throw new FactoryInvokedException();
+			class LogoutRequestEx extends LogoutRequest {
+				
+				public LogoutRequestEx(Saml2Settings sett, LogoutRequestParams par) {
+					super(sett, par);
+					assertSame(settings, sett);
+					assertSame(params, par);
+					throw new FactoryInvokedException();
+				}
+				
 			}
 			
-		}
-		
-		Auth auth = new Auth(settings, request, response);
-		auth.setSamlMessageFactory(new SamlMessageFactory() {
-			@Override
-			public LogoutRequest createOutgoingLogoutRequest(Saml2Settings settings, LogoutRequestParams params) {
-				return new LogoutRequestEx(settings, params);
-			}
+			Auth auth = new Auth(settings, request, response);
+			auth.setSamlMessageFactory(new SamlMessageFactory() {
+				@Override
+				public LogoutRequest createOutgoingLogoutRequest(Saml2Settings settings, LogoutRequestParams params) {
+					return new LogoutRequestEx(settings, params);
+				}
+			});
+			auth.logout(null, params);
 		});
-		auth.logout(null, params);
 	}
 	
 	/**
@@ -2349,38 +2362,40 @@ public class AuthTest {
 	 *
 	 * @see com.onelogin.saml2.Auth#setReceivedLogoutRequestFactory(com.onelogin.saml2.factory.SamlReceivedMessageFactory)
 	 */
-	@Test(expected = FactoryInvokedException.class)
+	@Test
 	public void testIncomingLogoutRequestFactory() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		HttpSession session = mock(HttpSession.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
-		when(request.getSession()).thenReturn(session);
+		assertThrows(FactoryInvokedException.class, () -> {
+			HttpServletRequest request = mock(HttpServletRequest.class);
+			HttpServletResponse response = mock(HttpServletResponse.class);
+			HttpSession session = mock(HttpSession.class);
+			when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
+			when(request.getSession()).thenReturn(session);
 
-		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));
-		final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		
-		class LogoutRequestEx extends LogoutRequest {
+			String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
+			when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));
+			final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+			
+			class LogoutRequestEx extends LogoutRequest {
 
-			public LogoutRequestEx(Saml2Settings sett, HttpRequest req) {
-				super(sett, req);
-				assertSame(settings, sett);
-				assertEquals(ServletUtils.makeHttpRequest(request), req);
-				throw new FactoryInvokedException();
+				public LogoutRequestEx(Saml2Settings sett, HttpRequest req) {
+					super(sett, req);
+					assertSame(settings, sett);
+					assertEquals(ServletUtils.makeHttpRequest(request), req);
+					throw new FactoryInvokedException();
+				}
+				
 			}
 			
-		}
-		
-		Auth auth = new Auth(settings, request, response);
-		auth.setSamlMessageFactory(new SamlMessageFactory() {
-			@Override
-			public LogoutRequest createIncomingLogoutRequest(Saml2Settings settings, HttpRequest request)
-			            throws Exception {
-				return new LogoutRequestEx(settings, request);
-			}
+			Auth auth = new Auth(settings, request, response);
+			auth.setSamlMessageFactory(new SamlMessageFactory() {
+				@Override
+				public LogoutRequest createIncomingLogoutRequest(Saml2Settings settings, HttpRequest request)
+				            throws Exception {
+					return new LogoutRequestEx(settings, request);
+				}
+			});
+			auth.processSLO();
 		});
-		auth.processSLO();
 	}
 
 	/**
@@ -2390,42 +2405,44 @@ public class AuthTest {
 	 *
 	 * @see com.onelogin.saml2.Auth#setOutgoingLogoutResponseFactory(com.onelogin.saml2.factory.SamlOutgoingMessageFactory)
 	 */
-	@Test(expected = FactoryInvokedException.class)
+	@Test
 	public void testOutgoingLogoutResponseFactory() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		HttpSession session = mock(HttpSession.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
-		when(request.getSession()).thenReturn(session);
+		assertThrows(FactoryInvokedException.class, () -> {
+			HttpServletRequest request = mock(HttpServletRequest.class);
+			HttpServletResponse response = mock(HttpServletResponse.class);
+			HttpSession session = mock(HttpSession.class);
+			when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
+			when(request.getSession()).thenReturn(session);
 
-		String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));
-		final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		
-		class LogoutResponseEx extends LogoutResponse {
+			String samlRequestEncoded = Util.getFileAsString("data/logout_requests/logout_request_deflated.xml.base64");
+			when(request.getParameterMap()).thenReturn(singletonMap("SAMLRequest", new String[]{samlRequestEncoded}));
+			final Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+			
+			class LogoutResponseEx extends LogoutResponse {
 
-			public LogoutResponseEx(Saml2Settings sett, LogoutResponseParams par) {
-				super(sett, par);
-				assertSame(settings, sett);
-				assertEquals("ONELOGIN_21584ccdfaca36a145ae990442dcd96bfe60151e", par.getInResponseTo());
-				SamlResponseStatus responseStatus = par.getResponseStatus();
-				assertEquals(Constants.STATUS_SUCCESS, responseStatus.getStatusCode());
-				assertNull(responseStatus.getSubStatusCode());
-				assertNull(responseStatus.getStatusMessage());
-				throw new FactoryInvokedException();
+				public LogoutResponseEx(Saml2Settings sett, LogoutResponseParams par) {
+					super(sett, par);
+					assertSame(settings, sett);
+					assertEquals("ONELOGIN_21584ccdfaca36a145ae990442dcd96bfe60151e", par.getInResponseTo());
+					SamlResponseStatus responseStatus = par.getResponseStatus();
+					assertEquals(Constants.STATUS_SUCCESS, responseStatus.getStatusCode());
+					assertNull(responseStatus.getSubStatusCode());
+					assertNull(responseStatus.getStatusMessage());
+					throw new FactoryInvokedException();
+				}
+				
 			}
 			
-		}
-		
-		Auth auth = new Auth(settings, request, response);
-		auth.setSamlMessageFactory(new SamlMessageFactory() {
-			@Override
-			public LogoutResponse createOutgoingLogoutResponse(Saml2Settings settings,
-			            LogoutResponseParams params) {
-				return new LogoutResponseEx(settings, params);
-			}
+			Auth auth = new Auth(settings, request, response);
+			auth.setSamlMessageFactory(new SamlMessageFactory() {
+				@Override
+				public LogoutResponse createOutgoingLogoutResponse(Saml2Settings settings,
+				            LogoutResponseParams params) {
+					return new LogoutResponseEx(settings, params);
+				}
+			});
+			auth.processSLO(false, null);
 		});
-		auth.processSLO(false, null);
 	}
 
 	/**
@@ -2435,36 +2452,38 @@ public class AuthTest {
 	 *
 	 * @see com.onelogin.saml2.Auth#setReceivedLogoutResponseFactory(com.onelogin.saml2.factory.SamlReceivedMessageFactory)
 	 */
-	@Test(expected = FactoryInvokedException.class)
+	@Test
 	public void testIncomingLogoutResponseFactory() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		HttpSession session = mock(HttpSession.class);
-		when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
-		when(request.getSession()).thenReturn(session);
+		assertThrows(FactoryInvokedException.class, () -> {
+			HttpServletRequest request = mock(HttpServletRequest.class);
+			HttpServletResponse response = mock(HttpServletResponse.class);
+			HttpSession session = mock(HttpSession.class);
+			when(request.getRequestURL()).thenReturn(new StringBuffer("http://stuff.com/endpoints/endpoints/sls.php"));
+			when(request.getSession()).thenReturn(session);
 
-		String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
-		when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
-		Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
-		
-		class LogoutResponseEx extends LogoutResponse {
+			String samlResponseEncoded = Util.getFileAsString("data/logout_responses/logout_response_deflated.xml.base64");
+			when(request.getParameterMap()).thenReturn(singletonMap("SAMLResponse", new String[]{samlResponseEncoded}));
+			Saml2Settings settings = new SettingsBuilder().fromFile("config/config.min.properties").build();
+			
+			class LogoutResponseEx extends LogoutResponse {
 
-			public LogoutResponseEx(Saml2Settings sett, HttpRequest req) {
-				super(sett, req);
-				assertSame(settings, sett);
-				assertEquals(ServletUtils.makeHttpRequest(request), req);
-				throw new FactoryInvokedException();
+				public LogoutResponseEx(Saml2Settings sett, HttpRequest req) {
+					super(sett, req);
+					assertSame(settings, sett);
+					assertEquals(ServletUtils.makeHttpRequest(request), req);
+					throw new FactoryInvokedException();
+				}
+				
 			}
 			
-		}
-		
-		Auth auth = new Auth(settings, request, response);
-		auth.setSamlMessageFactory(new SamlMessageFactory() {
-			@Override
-			public LogoutResponse createIncomingLogoutResponse(Saml2Settings settings, HttpRequest request) {
-				return new LogoutResponseEx(settings, request);
-			}
+			Auth auth = new Auth(settings, request, response);
+			auth.setSamlMessageFactory(new SamlMessageFactory() {
+				@Override
+				public LogoutResponse createIncomingLogoutResponse(Saml2Settings settings, HttpRequest request) {
+					return new LogoutResponseEx(settings, request);
+				}
+			});
+			auth.processSLO();
 		});
-		auth.processSLO();
 	}
 }

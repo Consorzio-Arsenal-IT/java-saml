@@ -2,14 +2,8 @@ package com.onelogin.saml2.test.logout;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.onelogin.saml2.exception.ValidationError;
 import java.io.IOException;
@@ -18,7 +12,6 @@ import java.util.Calendar;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import org.junit.Test;
 
 import com.onelogin.saml2.exception.Error;
 import com.onelogin.saml2.exception.XMLEntityException;
@@ -32,6 +25,7 @@ import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.test.NaiveUrlEncoder;
 import com.onelogin.saml2.util.Util;
 import com.onelogin.saml2.util.Constants;
+import org.junit.jupiter.api.Test;
 
 public class LogoutResponseTest {
 

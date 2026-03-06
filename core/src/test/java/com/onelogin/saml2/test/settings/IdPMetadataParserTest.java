@@ -1,13 +1,9 @@
 package com.onelogin.saml2.test.settings;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
-
 import java.net.URL;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
@@ -16,6 +12,8 @@ import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class IdPMetadataParserTest {
 
