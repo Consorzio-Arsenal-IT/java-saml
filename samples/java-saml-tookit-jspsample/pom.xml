@@ -12,7 +12,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.onelogin</groupId>
+			<groupId>it.arsenal</groupId>
 			<artifactId>java-saml</artifactId>
 			<version>${project.version}</version>
 		</dependency>
